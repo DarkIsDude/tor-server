@@ -8,21 +8,26 @@
 # Usage:
 #   docker run -d --restart=always -p 9001:9001 doudou34/tor-server
 
-FROM debian
+FROM debian:bullseye
 LABEL MAINTAINER="Edouard COMTET<edouard.comtet@gmail.com>"
 
 # If no Nickname is set, a random string will be added to 'Tor4'
 ENV TOR_NICKNAME=Tor4
 ENV TERM=xterm
 
-RUN apt-get update
-RUN apt-get install -y tor
-RUN apt-get install -y pwgen
-RUN apt-get -y purge --auto-remove
-RUN apt-get clean
+RUN apt-get update \
+    && apt-get install -y apt-transport-https wget gpg
 
 # Copy docker-entrypoint
 COPY ./scripts/ /usr/local/bin/
+COPY tor.sources.list /etc/apt/sources.list.d/tor.list
+
+RUN wget -qO- https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --dearmor | tee /usr/share/keyrings/tor-archive-keyring.gpg >/dev/null
+RUN apt-get update \
+    && apt-get install -y tor deb.torproject.org-keyring \
+    && apt-get install -y pwgen \
+    && apt-get -y purge --auto-remove \
+    && apt-get clean
 
 # Persist data
 VOLUME /etc/tor /var/lib/tor
