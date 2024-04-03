@@ -17,7 +17,7 @@ ENV TERM=xterm
 
 RUN apt-get update \
     && apt-get install -y apt-transport-https wget gpg
-
+RUN apt-get install unattended-upgrades apt-listchanges
 # Copy docker-entrypoint
 COPY ./scripts/ /usr/local/bin/
 COPY tor.sources.list /etc/apt/sources.list.d/tor.list
